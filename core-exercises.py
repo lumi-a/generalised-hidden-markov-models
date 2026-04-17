@@ -145,7 +145,7 @@ if __name__ == "__main__":
     )
 
     words = list(itertools.product([0, 1, 2, 3], repeat=6))
-    belief_states = np.array([predict_mess4(list(w))[1] for w in words])
+    belief_states = np.array([predict_mess4(list(w))[0] for w in words])
     # Project: each belief state is a convex combination of the tetrahedron vertices
     pts = belief_states @ tetrahedron
 
