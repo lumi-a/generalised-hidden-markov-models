@@ -1,7 +1,7 @@
 
 Exercises for the Computational Mechanics module at Iliad Intensive 2026.
 
-Verify correctness via `uv run core-exercises.py`.
+Verify correctness via `uv run core-exercises.py`. Interactive 3d plot at <https://lumi-a.github.io/generalised-hidden-markov-models/beliefstate.html>.
 
 ![Belief state prediction for x=0.15, alpha=0.2 on the Mess3 model](./3d.png)
 
