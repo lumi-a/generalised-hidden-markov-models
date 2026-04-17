@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from functools import partial
+from random import random
 
 import numpy as np
 import numpy.typing as npt
@@ -21,8 +22,8 @@ def run(
     return float(np.linalg.multi_dot([initial, *[T[w] for w in ws], phi]))
 
 
-p = 0.5
-q = 0.5
+p = random()
+q = random()
 xor_T = np.array(
     [
         [
@@ -48,5 +49,8 @@ if __name__ == "__main__":
     for a in [0, 1]:
         for b in [0, 1]:
             expected = 1 if a != b else 0
-            assert run_xor([a, b, expected]) == 0.25
-            assert run_xor([a, b, 1 - expected]) == 0
+            a_prob = p if a == 1 else 1 - p
+            b_prob = q if b == 1 else 1 - q
+            assert run_xor([a, b, expected]) == a_prob * b_prob, f"p={p}, q={q}"
+            assert run_xor([a, b, 1 - expected]) == 0, f"p={p}, q={q}"
+    print("Tests passed!")
