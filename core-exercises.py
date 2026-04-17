@@ -15,3 +15,32 @@ def run(T, initial, ws, phi=None) -> float:
         matrix_product = matrix_product @ T[w]
     return initial @ matrix_product @ phi
 
+
+p = 0.5
+q = 0.5
+xor_T = np.array(
+    [
+        [
+            [0, 1 - p, 0, 0, 0],
+            [0, 0, 0, 1 - q, 0],
+            [0, 0, 0, 0, 1 - q],
+            [1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+        ],
+        [
+            [0, 0, p, 0, 0],
+            [0, 0, 0, 0, q],
+            [0, 0, 0, q, 0],
+            [0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0],
+        ],
+    ]
+)
+xor_initial = np.array([1, 0, 0, 0, 0])
+run_xor = lambda ws: run(xor_T, xor_initial, ws)
+
+for a in [0, 1]:
+    for b in [0, 1]:
+        expected = 1 if a != b else 0
+        assert run_xor([a, b, expected]) == 0.25
+        assert run_xor([a, b, 1 - expected]) == 0
