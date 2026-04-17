@@ -80,27 +80,36 @@ ay = a * y
 bx = b * x
 by = b * y
 ax = a * x
-mess3_T = np.array(
+mess4_T = np.array(
     [
         [
-            [ay, bx, bx],
-            [ax, by, bx],
-            [ax, bx, by],
+            [ay, bx, bx, bx],
+            [ax, by, bx, bx],
+            [ax, bx, by, bx],
+            [ax, bx, bx, by],
         ],
         [
-            [by, ax, bx],
-            [bx, ay, bx],
-            [bx, ax, by],
+            [by, ax, bx, bx],
+            [bx, ay, bx, bx],
+            [bx, ax, by, bx],
+            [bx, ax, bx, by],
         ],
         [
-            [by, bx, ax],
-            [bx, by, ax],
-            [bx, bx, ay],
+            [by, bx, ax, bx],
+            [bx, by, ax, bx],
+            [bx, bx, ay, bx],
+            [bx, bx, ax, by],
+        ],
+        [
+            [by, bx, bx, ax],
+            [bx, by, bx, ax],
+            [bx, bx, by, ax],
+            [bx, bx, bx, ay],
         ],
     ]
 )
-mess3_initial = np.array([1 / 3, 1 / 3, 1 / 3])
-predict_mess3 = partial(predict, mess3_T, mess3_initial)
+mess4_initial = np.array([1 / 4, 1 / 4, 1 / 4, 1 / 4])
+predict_mess4 = partial(predict, mess4_T, mess4_initial)
 
 if __name__ == "__main__":
     for a in [0, 1]:
@@ -124,20 +133,62 @@ if __name__ == "__main__":
 
     import plotly.graph_objects as go
 
-    words = list(itertools.product([0, 1, 2], repeat=9))
-    belief_states = np.array([predict_mess3(list(w))[0] for w in words])
+    # Vertices of a regular tetrahedron in 3D — each row is one simplex corner
+    tetrahedron = np.array(
+        [
+            [1, 1, 1],
+            [1, -1, -1],
+            [-1, 1, -1],
+            [-1, -1, 1],
+        ],
+        dtype=float,
+    )
 
-    fig = go.Figure(
-        data=go.Scatter3d(
-            x=belief_states[:, 0],
-            y=belief_states[:, 1],
-            z=belief_states[:, 2],
+    words = list(itertools.product([0, 1, 2, 3], repeat=6))
+    belief_states = np.array([predict_mess4(list(w))[1] for w in words])
+    # Project: each belief state is a convex combination of the tetrahedron vertices
+    pts = belief_states @ tetrahedron
+
+    traces: list[go.BaseTraceType] = [
+        go.Scatter3d(
+            x=pts[:, 0],
+            y=pts[:, 1],
+            z=pts[:, 2],
             mode="markers",
             marker=dict(size=2, opacity=0.5),
+            name="belief states",
+        )
+    ]
+
+    # Draw the tetrahedron edges for reference
+    edges = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+    for i, j in edges:
+        v = tetrahedron[[i, j]]
+        traces.append(
+            go.Scatter3d(
+                x=v[:, 0],
+                y=v[:, 1],
+                z=v[:, 2],
+                mode="lines",
+                line=dict(color="grey", width=2),
+                showlegend=False,
+            )
+        )
+
+    # Label the simplex corners
+    labels = [f"State {k}" for k in range(4)]
+    traces.append(
+        go.Scatter3d(
+            x=tetrahedron[:, 0],
+            y=tetrahedron[:, 1],
+            z=tetrahedron[:, 2],
+            mode="text",
+            text=labels,
+            textposition="top center",
+            showlegend=False,
         )
     )
-    fig.update_layout(
-        title="Belief states after all 8-symbol words (alphabet {0,1,2})",
-        scene=dict(xaxis_title="State 0", yaxis_title="State 1", zaxis_title="State 2"),
-    )
+
+    fig = go.Figure(data=traces)
+    fig.update_layout(title="Belief states (3-simplex projection)")
     fig.show()
