@@ -69,8 +69,38 @@ z1r_T = np.array(
     [[[0, 1, 0], [0, 0, 0], [0.5, 0, 0]], [[0, 0, 0], [0, 0, 1], [0.5, 0, 0]]]
 )
 z1r_initial = np.array([1 / 3, 1 / 3, 1 / 3])
-
 predict_z1r = partial(predict, z1r_T, z1r_initial)
+
+
+a = 0.2
+x = 0.15
+b = (1 - a) / 2
+y = 1 - 2 * x
+ay = a * y
+bx = b * x
+by = b * y
+ax = a * x
+mess3_T = np.array(
+    [
+        [
+            [ay, bx, bx],
+            [ax, by, bx],
+            [ax, bx, by],
+        ],
+        [
+            [by, ax, bx],
+            [bx, ay, bx],
+            [bx, ax, by],
+        ],
+        [
+            [by, bx, ax],
+            [bx, by, ax],
+            [bx, bx, ay],
+        ],
+    ]
+)
+mess3_initial = np.array([1 / 3, 1 / 3, 1 / 3])
+predict_mess3 = partial(predict, mess3_T, mess3_initial)
 
 if __name__ == "__main__":
     for a in [0, 1]:
@@ -89,3 +119,25 @@ if __name__ == "__main__":
     assert predict_z1r([1, 1])[0].tolist() == [1, 0, 0]
 
     print("Tests passed!")
+
+    import itertools
+
+    import plotly.graph_objects as go
+
+    words = list(itertools.product([0, 1, 2], repeat=9))
+    belief_states = np.array([predict_mess3(list(w))[0] for w in words])
+
+    fig = go.Figure(
+        data=go.Scatter3d(
+            x=belief_states[:, 0],
+            y=belief_states[:, 1],
+            z=belief_states[:, 2],
+            mode="markers",
+            marker=dict(size=2, opacity=0.5),
+        )
+    )
+    fig.update_layout(
+        title="Belief states after all 8-symbol words (alphabet {0,1,2})",
+        scene=dict(xaxis_title="State 0", yaxis_title="State 1", zaxis_title="State 2"),
+    )
+    fig.show()

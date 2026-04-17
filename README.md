@@ -3,6 +3,8 @@ Exercises for the Computational Mechanics module at Iliad Intensive 2026.
 
 Verify correctness via `uv run core-exercises.py`.
 
+![Belief state prediction for x=0.15, alpha=0.2 on the Mess3 model](./3d.png)
+
 ## Exercises Probability
 
 1. Using your programming language of choice, implement a function that takes in:  
