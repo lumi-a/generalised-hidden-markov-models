@@ -1,19 +1,24 @@
+from collections.abc import Sequence
+from functools import partial
+
 import numpy as np
+import numpy.typing as npt
 
 
-def run(T, initial, ws, phi=None) -> float:
+def run(
+    T: npt.NDArray[np.float64],
+    initial: npt.NDArray[np.float64],
+    ws: Sequence[int],
+    phi: npt.NDArray[np.float64] | None = None,
+) -> float:
     """Returns the probability of seeing observations ws[0],ws[1],... in the GHHM given
     by T and the initial distribution.
     T has shape (observation, previous_state, next_state).
-    If phi is none, assumes a standard HMM.
+    If phi is None, assumes a standard HMM.
     """
     if phi is None:
         phi = np.ones(T.shape[1])
-
-    matrix_product = np.eye(T.shape[1], T.shape[2])
-    for w in ws:
-        matrix_product = matrix_product @ T[w]
-    return initial @ matrix_product @ phi
+    return float(np.linalg.multi_dot([initial, *[T[w] for w in ws], phi]))
 
 
 p = 0.5
@@ -36,11 +41,12 @@ xor_T = np.array(
         ],
     ]
 )
-xor_initial = np.array([1, 0, 0, 0, 0])
-run_xor = lambda ws: run(xor_T, xor_initial, ws)
+xor_initial = np.array([1, 0, 0, 0, 0], dtype=np.float64)
+run_xor = partial(run, xor_T, xor_initial)
 
-for a in [0, 1]:
-    for b in [0, 1]:
-        expected = 1 if a != b else 0
-        assert run_xor([a, b, expected]) == 0.25
-        assert run_xor([a, b, 1 - expected]) == 0
+if __name__ == "__main__":
+    for a in [0, 1]:
+        for b in [0, 1]:
+            expected = 1 if a != b else 0
+            assert run_xor([a, b, expected]) == 0.25
+            assert run_xor([a, b, 1 - expected]) == 0
